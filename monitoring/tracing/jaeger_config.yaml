@@ -1,0 +1,43 @@
+collector:
+  zipkin:
+    http-port: 9411
+  otlp:
+    grpc:
+      enabled: true
+      host-port: ":4317"
+    http:
+      enabled: true
+      host-port: ":4318"
+
+sampling:
+  strategies:
+    - type: probabilistic
+      param: 0.1
+
+storage:
+  type: elasticsearch
+  options:
+    es:
+      server-urls: http://elasticsearch:9200
+      username: "jaeger"
+      password: "changeme"
+      index-prefix: "jaeger"
+      create-index-templates: true
+
+query:
+  base-path: "/jaeger"
+  static-files: "/jaeger-ui/build/"
+  port: 16686
+
+agent:
+  http-server:
+    host-port: ":5778"
+  zipkin:
+    http-port: 9411
+  otlp:
+    grpc:
+      enabled: true
+      host-port: ":4317"
+    http:
+      enabled: true
+      host-port: ":4318"

@@ -1,0 +1,54 @@
+resources:
+  - name: "eks-cluster"
+    type: "AWS::EKS::Cluster"
+    properties:
+      name: "microservices-cluster"
+      version: "1.27"
+      roleArn: !Ref EKSClusterRole
+      resourcesVpcConfig:
+        subnetIds: !Ref SubnetIds
+        securityGroupIds: !Ref SecurityGroupIds
+
+  - name: "eks-node-group"
+    type: "AWS::EKS::Nodegroup"
+    properties:
+      clusterName: !Ref eks-cluster
+      nodeRole: !Ref NodeInstanceRole
+      subnets: !Ref SubnetIds
+      scalingConfig:
+        minSize: 3
+        maxSize: 10
+        desiredSize: 5
+      instanceTypes: ["m5.large"]
+      diskSize: 100
+
+  - name: "rds-postgres"
+    type: "AWS::RDS::DBInstance"
+    properties:
+      DBInstanceIdentifier: "microservices-postgres"
+      Engine: "postgres"
+      DBInstanceClass: "db.m5.large"
+      AllocatedStorage: 100
+      MasterUsername: "admin"
+      MasterUserPassword: !Ref DBPassword
+      MultiAZ: true
+      StorageEncrypted: true
+
+  - name: "elasticache-redis"
+    type: "AWS::ElastiCache::CacheCluster"
+    properties:
+      CacheNodeType: "cache.m5.large"
+      Engine: "redis"
+      NumCacheNodes: 3
+      ClusterName: "microservices-cache"
+      SnapshotRetentionLimit: 7
+      AutomaticFailoverEnabled: true
+
+parameters:
+  SubnetIds:
+    type: "List<AWS::EC2::Subnet::Id>"
+  SecurityGroupIds:
+    type: "List<AWS::EC2::SecurityGroup::Id>"
+  DBPassword:
+    type: "String"
+    noEcho: true

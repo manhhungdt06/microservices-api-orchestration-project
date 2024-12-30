@@ -1,0 +1,57 @@
+pod_security_policies:
+  - name: "restricted"
+    privileged: false
+    allow_privilege_escalation: false
+    required_drop_capabilities:
+      - "ALL"
+    volumes:
+      - "configMap"
+      - "emptyDir"
+      - "secret"
+    host_network: false
+    host_pid: false
+    host_ipc: false
+    run_as_user:
+      rule: "MustRunAsNonRoot"
+    se_linux:
+      rule: "RunAsAny"
+    supplemental_groups:
+      rule: "MustRunAs"
+      ranges:
+        - min: 1
+          max: 65535
+    fs_group:
+      rule: "MustRunAs"
+      ranges:
+        - min: 1
+          max: 65535
+    read_only_root_filesystem: true
+    allowed_host_paths: []
+    allowed_capabilities: []
+    default_add_capabilities: []
+    forbidden_sysctls: ["*"]
+
+  - name: "privileged"
+    privileged: true
+    allow_privilege_escalation: true
+    allowed_capabilities:
+      - "*"
+    volumes:
+      - "*"
+    host_network: true
+    host_pid: true
+    host_ipc: true
+    run_as_user:
+      rule: "RunAsAny"
+    se_linux:
+      rule: "RunAsAny"
+    supplemental_groups:
+      rule: "RunAsAny"
+    fs_group:
+      rule: "RunAsAny"
+    read_only_root_filesystem: false
+    allowed_host_paths: []
+    default_add_capabilities: []
+    forbidden_sysctls: []
+
+default_policy: "restricted"

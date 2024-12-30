@@ -1,0 +1,72 @@
+slo_definitions:
+  - service: "auth_service"
+    objectives:
+      - name: "availability"
+        target: 99.9%
+        time_window: 30d
+        alerting:
+          burn_rate: 2
+          threshold: 5%
+      - name: "latency"
+        target: "95th percentile < 500ms"
+        time_window: 7d
+        alerting:
+          burn_rate: 1.5
+          threshold: 10%
+
+  - service: "catalog_service"
+    objectives:
+      - name: "availability"
+        target: 99.9%
+        time_window: 30d
+        alerting:
+          burn_rate: 2
+          threshold: 5%
+      - name: "latency"
+        target: "95th percentile < 500ms"
+        time_window: 7d
+        alerting:
+          burn_rate: 1.5
+          threshold: 10%
+
+  - service: "order_service"
+    objectives:
+      - name: "availability"
+        target: 99.95%
+        time_window: 30d
+        alerting:
+          burn_rate: 2
+          threshold: 5%
+      - name: "latency"
+        target: "95th percentile < 500ms"
+        time_window: 7d
+        alerting:
+          burn_rate: 1.5
+          threshold: 10%
+
+  - service: "payment_service"
+    objectives:
+      - name: "availability"
+        target: 99.95%
+        time_window: 30d
+        alerting:
+          burn_rate: 2
+          threshold: 5%
+      - name: "latency"
+        target: "95th percentile < 500ms"
+        time_window: 7d
+        alerting:
+          burn_rate: 1.5
+          threshold: 10%
+
+global_alerting:
+  notification_channels:
+    - email: "devops@example.com"
+    - slack: "#alerts"
+  escalation_policy:
+    - level: 1
+      timeout: 5m
+    - level: 2
+      timeout: 15m
+    - level: 3
+      timeout: 30m

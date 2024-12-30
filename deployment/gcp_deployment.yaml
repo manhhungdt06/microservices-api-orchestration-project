@@ -1,0 +1,60 @@
+resources:
+  - name: "gke-cluster"
+    type: "container.v1.cluster"
+    properties:
+      name: "microservices-cluster"
+      location: "us-central1"
+      initialNodeCount: 3
+      nodeConfig:
+        machineType: "e2-standard-4"
+        diskSizeGb: 100
+        oauthScopes:
+          - "https://www.googleapis.com/auth/cloud-platform"
+      network: !Ref Network
+      subnetwork: !Ref Subnetwork
+      ipAllocationPolicy:
+        useIpAliases: true
+      privateClusterConfig:
+        enablePrivateNodes: true
+        masterIpv4CidrBlock: "172.16.0.0/28"
+
+  - name: "cloudsql-postgres"
+    type: "sqladmin.v1beta4.instance"
+    properties:
+      name: "microservices-postgres"
+      region: "us-central1"
+      databaseVersion: "POSTGRES_13"
+      settings:
+        tier: "db-custom-2-4096"
+        dataDiskSizeGb: 100
+        ipConfiguration:
+          ipv4Enabled: false
+          privateNetwork: !Ref Network
+        backupConfiguration:
+          enabled: true
+          startTime: "02:00"
+        locationPreference:
+          zone: "us-central1-a"
+        maintenanceWindow:
+          day: 1
+          hour: 2
+        storageAutoResize: true
+
+  - name: "memorystore-redis"
+    type: "redis.v1.instance"
+    properties:
+      name: "microservices-cache"
+      tier: "STANDARD_HA"
+      memorySizeGb: 5
+      region: "us-central1"
+      authorizedNetwork: !Ref Network
+      redisVersion: "REDIS_6_X"
+      persistenceConfig:
+        persistenceMode: "RDB"
+        rdbSnapshotPeriod: "TWELVE_HOURS"
+
+parameters:
+  Network:
+    type: "string"
+  Subnetwork:
+    type: "string"

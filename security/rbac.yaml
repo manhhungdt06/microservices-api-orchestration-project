@@ -1,0 +1,52 @@
+roles:
+  - name: "admin"
+    description: "System administrator with full access"
+    permissions:
+      - "users:*"
+      - "orders:*"
+      - "products:*"
+      - "payments:*"
+      - "reports:*"
+
+  - name: "manager"
+    description: "Manager with limited administrative access"
+    permissions:
+      - "orders:read"
+      - "orders:write"
+      - "products:read"
+      - "reports:read"
+
+  - name: "customer"
+    description: "Regular customer access"
+    permissions:
+      - "profile:read"
+      - "profile:write"
+      - "orders:create"
+      - "orders:read"
+
+resources:
+  - name: "users"
+    actions: ["read", "write", "delete"]
+  - name: "orders"
+    actions: ["create", "read", "update", "delete"]
+  - name: "products"
+    actions: ["read", "write"]
+  - name: "payments"
+    actions: ["create", "read"]
+  - name: "reports"
+    actions: ["read"]
+
+default_permissions:
+  - role: "anonymous"
+    permissions:
+      - "products:read"
+      - "auth:login"
+
+role_hierarchy:
+  admin: ["manager", "customer"]
+  manager: ["customer"]
+
+constraints:
+  - resource: "orders"
+    condition: "owner_id == user_id"
+    permissions: ["read", "update"]

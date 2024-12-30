@@ -1,0 +1,67 @@
+network_policies:
+  - name: "api-gateway-ingress"
+    namespace: "default"
+    pod_selector:
+      match_labels:
+        app: "api-gateway"
+    policy_types: ["Ingress"]
+    ingress:
+      - from:
+          - ip_block:
+              cidr: "0.0.0.0/0"
+        ports:
+          - protocol: "TCP"
+            port: 80
+          - protocol: "TCP"
+            port: 443
+
+  - name: "microservices-egress"
+    namespace: "default"
+    pod_selector:
+      match_labels:
+        app: ["auth-service", "catalog-service", "order-service", "payment-service"]
+    policy_types: ["Egress"]
+    egress:
+      - to:
+          - pod_selector:
+              match_labels:
+                app: "api-gateway"
+        ports:
+          - protocol: "TCP"
+            port: 8080
+
+  - name: "database-access"
+    namespace: "default"
+    pod_selector:
+      match_labels:
+        app: ["auth-service", "catalog-service", "order-service", "payment-service"]
+    policy_types: ["Egress"]
+    egress:
+      - to:
+          - pod_selector:
+              match_labels:
+                app: ["postgres", "mongodb"]
+        ports:
+          - protocol: "TCP"
+            port: 5432
+          - protocol: "TCP"
+            port: 27017
+
+  - name: "message-broker-access"
+    namespace: "default"
+    pod_selector:
+      match_labels:
+        app: ["auth-service", "catalog-service", "order-service", "payment-service"]
+    policy_types: ["Egress"]
+    egress:
+      - to:
+          - pod_selector:
+              match_labels:
+                app: "rabbitmq"
+        ports:
+          - protocol: "TCP"
+            port: 5672
+
+default_deny:
+  - namespace: "default"
+    policy_types: ["Ingress", "Egress"]

@@ -1,0 +1,54 @@
+rabbitmq:
+  host: "rabbitmq"
+  port: 5672
+  username: "microservice"
+  password: "securepassword"
+  vhost: "/microservices"
+
+queues:
+  - name: "auth_events"
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000  # 1 day in ms
+  - name: "order_events"
+    durable: true
+    auto_delete: false
+  - name: "payment_events"
+    durable: true
+    auto_delete: false
+
+exchanges:
+  - name: "microservice_events"
+    type: "topic"
+    durable: true
+    auto_delete: false
+
+bindings:
+  - exchange: "microservice_events"
+    queue: "auth_events"
+    routing_key: "auth.*"
+  - exchange: "microservice_events"
+    queue: "order_events"
+    routing_key: "order.*"
+  - exchange: "microservice_events"
+    queue: "payment_events"
+    routing_key: "payment.*"
+
+policies:
+  - name: "ha-all"
+    pattern: "^ha\."
+    definition:
+      ha-mode: all
+      ha-sync-mode: automatic
+
+management:
+  enabled: true
+  port: 15672
+  ssl:
+    enabled: false
+
+metrics:
+  enabled: true
+  port: 15692
+  path: "/metrics"

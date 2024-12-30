@@ -1,0 +1,45 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+test:
+  stage: test
+  image: python:3.9
+  script:
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov
+    - pytest --cov=./ --cov-report=xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+build:
+  stage: build
+  image: docker:20.10
+  services:
+    - docker:20.10-dind
+  script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE/auth-service:latest -f services/auth_service/Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/catalog-service:latest -f services/catalog_service/Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/order-service:latest -f services/order_service/Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/payment-service:latest -f services/payment_service/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/auth-service:latest
+    - docker push $CI_REGISTRY_IMAGE/catalog-service:latest
+    - docker push $CI_REGISTRY_IMAGE/order-service:latest
+    - docker push $CI_REGISTRY_IMAGE/payment-service:latest
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - mkdir -p ~/.kube
+    - echo "$KUBE_CONFIG" > ~/.kube/config
+    - kubectl apply -f orchestration/kubernetes/
+  only:
+    - main
